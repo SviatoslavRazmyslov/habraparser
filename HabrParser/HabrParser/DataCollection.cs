@@ -8,6 +8,7 @@ using HtmlAgilityPack;
 using System.Windows.Forms;
 
 
+
 namespace DataCollectionNameSpace
 {
 
@@ -27,24 +28,36 @@ namespace DataCollectionNameSpace
 
     class DataCollection
     {
-       // public void DataCollection()
-        public void MySearch()
+       public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
+       {
+            
+
+            InfoSite infoSite = new InfoSite();
+
+            //string url = "https://habr.com/post/97059/";
+            // Здесь будет цикл
+            //myInfoSite.Add(MySearch(url, infoSite));
+            foreach (string currlink in links)
+            {
+                myInfoSite.Add(MySearch(currlink, infoSite));
+                Console.Clear();
+                Console.Write("\n", myInfoSite.Count);
+            }
+            return myInfoSite;
+        }
+
+        public InfoSite MySearch(string url, InfoSite infoSite)
         {
 
             //InfoSite MySiteInfo = new InfoSite(); 
             // Создаём экземпляр класса
             HtmlAgilityPack.HtmlDocument doc2 = new HtmlAgilityPack.HtmlDocument();
             // Присваиваем текстовой переменной k html-код
-            string url = "https://habr.com/company/pvs-studio/blog/418143/";
-            
+
             var web = new HtmlWeb();
             var htmlDoc = web.Load(url);
 
-            List<InfoSite> myInfoSite = new List<InfoSite>();
-
-            InfoSite infoSite = new InfoSite();
-
-            
+      
 
 
           //  var doc3 = new HtmlAgilityPack.HtmlDocument();
@@ -57,11 +70,24 @@ namespace DataCollectionNameSpace
                                    .SelectSingleNode("//head/link[@rel='canonical']").Attributes["href"].Value;
 
             string buf = "";
-            buf = htmlDoc.DocumentNode
-                        .SelectSingleNode("//span[@class='voting-wjt__counter voting-wjt__counter_positive  js-score']").InnerText;
-            infoSite.rating = Convert.ToInt32(buf);
-
-
+            buf = htmlDoc.DocumentNode                     
+                            .SelectSingleNode("//ul/li/div[@class='voting-wjt voting-wjt_post js-post-vote']/span").InnerText;
+           
+       
+            
+            if (buf.StartsWith("–")
+                || buf.StartsWith("‐")
+                || buf.StartsWith("−")
+                || buf.StartsWith("—"))
+            {
+                buf = buf.Remove(0, 1);
+                infoSite.rating = Convert.ToInt32(buf) * (-1);
+            }
+            else
+            {
+                infoSite.rating = Convert.ToInt32(buf);
+            }
+            
             buf = htmlDoc.DocumentNode
                             .SelectSingleNode("//span[@class='bookmark__counter js-favs_count']").InnerText;
             infoSite.bootmarks = Convert.ToInt32(buf);
@@ -76,8 +102,16 @@ namespace DataCollectionNameSpace
 
 
             buf = htmlDoc.DocumentNode
-                            .SelectSingleNode("//span[@class='post-stats__comments-count']").InnerText;
-            infoSite.numbOfComments = Convert.ToInt32(buf);
+                            .SelectSingleNode("//a[@class='post-stats__comments-link']").InnerText;
+            try
+            {
+                infoSite.numbOfComments = Convert.ToInt32(buf);
+            }
+            catch
+            {
+                infoSite.numbOfComments = 0;
+            }
+            
 
 
            /* infoSite.timeOfPublication = htmlDoc.DocumentNode
@@ -97,8 +131,7 @@ namespace DataCollectionNameSpace
                 infoSite.labels.Add(node.InnerText) ;
             }
 
-            myInfoSite.Add(infoSite);       //Обернуть функцию
-
+            return infoSite;
         }
     }
 }
