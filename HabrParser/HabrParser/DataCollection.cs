@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using HtmlAgilityPack;
-using System.Windows.Forms;
-
 
 
 namespace DataCollectionNameSpace
 {
-
     struct InfoSite
     {
         public string name;
@@ -28,54 +22,49 @@ namespace DataCollectionNameSpace
 
     class DataCollection
     {
-       public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
+        private readonly string NAME = "//span[@class='post__title-text']";
+        private readonly string LINK = "//head/link[@rel='canonical']";
+        private readonly string RAITING = "//ul/li/div[@class='voting-wjt voting-wjt_post js-post-vote']/span";
+        private readonly string BOOTMARKS = "//span[@class='bookmark__counter js-favs_count']";
+        private readonly string VIEWS = "//span[@class='post-stats__views-count']";
+        private readonly string COMMENTS = "//a[@class='post-stats__comments-link']";
+        private readonly string DATE = "//span[@class='post__time']";
+        private readonly string LABELS = "//li[@class='inline-list__item inline-list__item_tag']/a";
+
+        //"//li[@class='inline-list__item inline-list__item_tag']/a"
+
+            public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
        {
-            
 
             InfoSite infoSite = new InfoSite();
-
-            //string url = "https://habr.com/post/97059/";
-            // Здесь будет цикл
-            //myInfoSite.Add(MySearch(url, infoSite));
-            foreach (string currlink in links)
+            foreach (string link in links)
             {
-                myInfoSite.Add(MySearch(currlink, infoSite));
-                Console.Clear();
-                Console.Write("\n", myInfoSite.Count);
+                myInfoSite.Add(DataCollectionOnSite(link, infoSite));
             }
             return myInfoSite;
         }
 
-        public InfoSite MySearch(string url, InfoSite infoSite)
+
+
+        private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
         {
 
-            //InfoSite MySiteInfo = new InfoSite(); 
-            // Создаём экземпляр класса
-            HtmlAgilityPack.HtmlDocument doc2 = new HtmlAgilityPack.HtmlDocument();
-            // Присваиваем текстовой переменной k html-код
-
-            var web = new HtmlWeb();
-            var htmlDoc = web.Load(url);
-
-      
-
-
-          //  var doc3 = new HtmlAgilityPack.HtmlDocument();
-           
+            var htmlDoc = new HtmlWeb().Load(url);
+            // Поиск названия сайта       
             infoSite.name = htmlDoc.DocumentNode
-                                   .SelectSingleNode("//span[@class='post__title-text']").InnerText;
+                                   .SelectSingleNode(NAME).InnerText;
 
 
+            // Поиск ссылки сайта       
             infoSite.link = htmlDoc.DocumentNode
-                                   .SelectSingleNode("//head/link[@rel='canonical']").Attributes["href"].Value;
+                                   .SelectSingleNode(LINK).Attributes["href"].Value;
 
             string buf = "";
+            // Поиск общего рейтинга сайта       
             buf = htmlDoc.DocumentNode                     
-                            .SelectSingleNode("//ul/li/div[@class='voting-wjt voting-wjt_post js-post-vote']/span").InnerText;
-           
-       
+                         .SelectSingleNode(RAITING).InnerText;
             
-            if (buf.StartsWith("–")
+            if (   buf.StartsWith("–")
                 || buf.StartsWith("‐")
                 || buf.StartsWith("−")
                 || buf.StartsWith("—"))
@@ -87,49 +76,53 @@ namespace DataCollectionNameSpace
             {
                 infoSite.rating = Convert.ToInt32(buf);
             }
-            
+
+            // Поиск колличества закладок данного сайта       
             buf = htmlDoc.DocumentNode
-                            .SelectSingleNode("//span[@class='bookmark__counter js-favs_count']").InnerText;
+                         .SelectSingleNode(BOOTMARKS).InnerText;
             infoSite.bootmarks = Convert.ToInt32(buf);
 
-            
+            //Поиск колличества просмотров 
             buf = htmlDoc.DocumentNode
-                            .SelectSingleNode("//span[@class='post-stats__views-count']").InnerText;
+                         .SelectSingleNode(VIEWS).InnerText;
+
+            if (buf.Contains('k'))
+            {
+                buf = buf.Substring(0, buf.Length - 1);
+                infoSite.views = Convert.ToDouble(buf) * 1000;
+            }
+            else
+            {
+                infoSite.views = Convert.ToDouble(buf);
+            }
 
 
-            buf = buf.Substring(0, buf.Length - 1);
-            infoSite.views = Convert.ToDouble(buf) * 1000;     
-
-
+            // Поиск колличества комментариев на сайте       
             buf = htmlDoc.DocumentNode
-                            .SelectSingleNode("//a[@class='post-stats__comments-link']").InnerText;
-            try
-            {
-                infoSite.numbOfComments = Convert.ToInt32(buf);
-            }
-            catch
-            {
-                infoSite.numbOfComments = 0;
-            }
-            
+                         .SelectSingleNode(COMMENTS).InnerText;
 
+            int.TryParse(buf, out infoSite.numbOfComments);
 
-           /* infoSite.timeOfPublication = htmlDoc.DocumentNode
-                            .SelectSingleNode("//span[@class='post__title-text']").InnerText;*/
+            /* infoSite.timeOfPublication = htmlDoc.DocumentNode
+                             .SelectSingleNode("//span[@class='post__title-text']").InnerText;*/
 
-
+            // Поиск даты создания сайта       
             infoSite.dateOfPublication = htmlDoc.DocumentNode
-                            .SelectSingleNode("//span[@class='post__time']").InnerText;
+                                                .SelectSingleNode(DATE).InnerText;
 
-
+            // Поиск меток, присутствующих на сайте       
             var nodes = htmlDoc.DocumentNode
-                            .SelectNodes("//li[@class='inline-list__item inline-list__item_tag']/a");
+                               .SelectNodes(LABELS);
 
             infoSite.labels = new List<string>();
-            foreach (var node in nodes)
+            if (nodes != null)
             {
-                infoSite.labels.Add(node.InnerText) ;
+                foreach (var node in nodes)
+                {
+                    infoSite.labels.Add(node.InnerText);
+                }
             }
+                       
 
             return infoSite;
         }

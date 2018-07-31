@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.Collections.Generic;
 using HtmlAgilityPack;
 
 namespace List_Links
 {
+    
     public class Links
     {
-        public void Get_Links(string url, List<string> links)
+        private readonly string TITLE = "//h2[@class='post__title']/a";
+        private readonly string NEXT_PAGE = "//a[@class='arrows-pagination__item-link " +
+                                            "arrows-pagination__item-link_next']";
+        private readonly string ATRIB = "href";
+        private readonly string START_PAGE = "https://habr.com";
+
+        public List<string> Get_Links(string url, List<string> links)
         {
             var web = new HtmlWeb();
             var htmlDoc = web.Load(url);
             var nodes = htmlDoc.DocumentNode
-                               .SelectNodes("//h2[@class='post__title']/a");
+                               .SelectNodes(TITLE);
             if (nodes == null)
             {
-                return;
+                return null;
             }
             while (nodes != null)
             {
@@ -26,22 +28,22 @@ namespace List_Links
                 {
                     links
                         .Add(node
-                                .Attributes["href"]
+                                .Attributes[ATRIB]
                                 .Value);
                 }
 
-                var nextPage = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='arrows-pagination__item-link " +
-                                                         "arrows-pagination__item-link_next']");
+                var nextPage = htmlDoc.DocumentNode.SelectSingleNode(NEXT_PAGE);
 
-                if (nextPage == null || nextPage.Attributes["href"] == null)
+                if (nextPage == null || nextPage.Attributes[ATRIB] == null)
                 {
                     break;
                 }
 
-                htmlDoc = web.Load("https://habr.com" + nextPage.Attributes["href"].Value);
+                htmlDoc = web.Load(START_PAGE + nextPage.Attributes[ATRIB].Value);
                 nodes = htmlDoc.DocumentNode
-                               .SelectNodes("//h2[@class='post__title']/a");
+                               .SelectNodes(TITLE);
             }
+            return links;
         }
     }
 }
