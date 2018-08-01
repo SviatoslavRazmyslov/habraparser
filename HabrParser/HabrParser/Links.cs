@@ -12,7 +12,7 @@ namespace List_Links
         private readonly string ATRIB = "href";
         private readonly string START_PAGE = "https://habr.com";
 
-        public List<string> Get_Links(string url, List<string> links)
+        public List<string> GetLinks(string url, List<string> links)
         {
             var web = new HtmlWeb();
             var htmlDoc = web.Load(url);
@@ -26,20 +26,20 @@ namespace List_Links
             {
                 foreach (HtmlNode node in nodes)
                 {
-                    links
-                        .Add(node
-                                .Attributes[ATRIB]
-                                .Value);
+                    links.Add(node.Attributes[ATRIB]
+                                  .Value);
                 }
 
-                var nextPage = htmlDoc.DocumentNode.SelectSingleNode(NEXT_PAGE);
+                var nextPage = htmlDoc.DocumentNode
+                                      .SelectSingleNode(NEXT_PAGE);
 
                 if (nextPage == null || nextPage.Attributes[ATRIB] == null)
                 {
                     break;
                 }
 
-                htmlDoc = web.Load(START_PAGE + nextPage.Attributes[ATRIB].Value);
+                htmlDoc = web.Load(START_PAGE + nextPage.Attributes[ATRIB]
+                                                        .Value);
                 nodes = htmlDoc.DocumentNode
                                .SelectNodes(TITLE);
             }
