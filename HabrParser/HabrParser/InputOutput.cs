@@ -18,7 +18,6 @@ namespace InOut
         private readonly string LABEL = "Метки";
         private readonly string HUBS = "Хабы";
         private readonly string Sym = ";";
-        private readonly string EMPTY = "";
 
         public string GetLinkBlog()
         {
