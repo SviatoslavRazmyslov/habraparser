@@ -15,8 +15,8 @@ namespace HabrParser
             List<string> links = new List<string>(); // Лист с ссылками
             Links ObjLinks = new Links();
             InputOutput IO = new InputOutput();
-            links = ObjLinks.GetLinks(IO.GetLinkBlog(), links);
-            if (links == null)
+            ObjLinks.GetLinks(IO.GetLinkBlog(), links);
+            if (links.Count == 0)
             {
                 Console.Write("В данном блоге статей нет!");
             }
