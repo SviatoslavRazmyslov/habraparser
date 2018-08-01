@@ -57,7 +57,6 @@ namespace DataCollectionNameSpace
             int counter = 1;
             foreach (string link in links)
             {
-                if (counter > 20) break;
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
                 Console.WriteLine((counter++) + "/"+ links.Count);
             }
