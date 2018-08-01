@@ -40,7 +40,6 @@ namespace InOut
                                                 FileMode.Create,
                                                 FileAccess.Write);
             StreamWriter Writer = new StreamWriter(File, Encoding.Unicode);
-            string Buf = EMPTY;
             Writer.WriteLine(NAME + Sym +
                              LINK + Sym +
                              RAITING + Sym +
@@ -50,32 +49,11 @@ namespace InOut
                              DATEOFPUBLICATION + Sym +
                              LABEL + Sym +
                              HUBS);
-            string Buf2 = EMPTY;
+
             for (int i = 0; i < myInfoSite.Count; i++)
             {
-                for (int j = 0; j < myInfoSite[i].labels.Count; j++)
-                {
-                    if (j+1 < myInfoSite[i].labels.Count)
-                    {
-                        Buf += myInfoSite[i].labels[j] + ", ";
-                    }
-                    else
-                    {
-                        Buf += myInfoSite[i].labels[j] + ".";
-                    }
-                }
-
-                for (int j = 0; j < myInfoSite[i].hubs.Count; j++)
-                {
-                    if (j + 1 < myInfoSite[i].hubs.Count)
-                    {
-                        Buf2 += myInfoSite[i].hubs[j] + ", ";
-                    }
-                    else
-                    {
-                        Buf2 += myInfoSite[i].hubs[j] + ".";
-                    }
-                }
+                var buf_labels = string.Join(", ", myInfoSite[i].labels);
+                var buf_hubs = string.Join(", ", myInfoSite[i].hubs);
 
                 Writer.WriteLine(myInfoSite[i].name + Sym +
                                  myInfoSite[i].link + Sym +
@@ -84,10 +62,8 @@ namespace InOut
                                  myInfoSite[i].views + Sym +
                                  myInfoSite[i].numbOfComments + Sym +
                                  myInfoSite[i].dateOfPublication + Sym +
-                                 Buf + Sym +
-                                 Buf2);
-                Buf = EMPTY;
-                Buf2 = EMPTY;
+                                 buf_labels + Sym +
+                                 buf_hubs);
             }
             Writer.Close();
         }
