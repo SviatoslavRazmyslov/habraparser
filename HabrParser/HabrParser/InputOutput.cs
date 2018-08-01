@@ -51,8 +51,8 @@ namespace InOut
 
             for (int i = 0; i < myInfoSite.Count; i++)
             {
-                var buf_labels = string.Join(", ", myInfoSite[i].labels);
-                var buf_hubs = string.Join(", ", myInfoSite[i].hubs);
+                string buf_labels = string.Join(", ", myInfoSite[i].labels);
+                string buf_hubs = string.Join(", ", myInfoSite[i].hubs);
 
                 Writer.WriteLine(myInfoSite[i].name + Sym +
                                  myInfoSite[i].link + Sym +
