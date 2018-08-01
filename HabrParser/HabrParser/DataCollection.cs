@@ -57,7 +57,7 @@ namespace DataCollectionNameSpace
             int counter = 1;
             foreach (string link in links)
             {
-                if (counter > 10) break;
+                if (counter > 20) break;
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
                 Console.WriteLine((counter++) + "/"+ links.Count);
             }
@@ -66,7 +66,7 @@ namespace DataCollectionNameSpace
 
         private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
         {
-            var htmlDoc = new HtmlWeb().Load(url);
+            HtmlDocument htmlDoc = new HtmlWeb().Load(url);
             
             // Поиск названия сайта       
             infoSite.name = htmlDoc.DocumentNode
@@ -126,7 +126,7 @@ namespace DataCollectionNameSpace
             //Замена буквенного представления месяца на численное
             
             buf = buf.TrimStart(' ').TrimEnd(' ');
-            var res = buf.Split(' ');
+            string[] res = buf.Split(' ');
 
             string indexMonth;
             months.TryGetValue(res[1], out indexMonth);
@@ -148,13 +148,12 @@ namespace DataCollectionNameSpace
                 case 3:
                     if (buf.Contains("сегодня"))
                     {
-                        var time = DateTime.ParseExact(buf, "сегодня в HH:mm", provider);
+                        DateTime time = DateTime.ParseExact(buf, "сегодня в HH:mm", provider);
                         result = DateTime.Now.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
-                        
                     }
                     else if (buf.Contains("вчера"))
                     {
-                        var time = DateTime.ParseExact(buf, "вчера в HH:mm", provider);
+                        DateTime time = DateTime.ParseExact(buf, "вчера в HH:mm", provider);
                         result = DateTime.Now.AddDays(-1);
                         result = DateTime.Now.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
                     }
@@ -171,7 +170,7 @@ namespace DataCollectionNameSpace
             infoSite.dateOfPublication = unixTimeDate.TotalSeconds;
 
             // Поиск меток, присутствующих на сайте       
-            var nodes = htmlDoc.DocumentNode
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode
                                .SelectNodes(LABELS);
 
             infoSite.labels = new List<string>();
