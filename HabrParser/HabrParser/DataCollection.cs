@@ -23,7 +23,7 @@ namespace DataCollectionNameSpace
         public int numbOfComments;
         public double dateOfPublication;
         public List<string> labels;
-        public List<string> habs;
+        public List<string> hubs;
 
     }
 
@@ -38,7 +38,7 @@ namespace DataCollectionNameSpace
         private readonly string COMMENTS = "//a[@class='post-stats__comments-link']";
         private readonly string DATE = "//span[@class='post__time']";
         private readonly string LABELS = "//li[@class='inline-list__item inline-list__item_tag']/a";
-        private readonly string HABS = "//li[@class='inline-list__item inline-list__item_hub']/a";
+        private readonly string HUBS = "//li[@class='inline-list__item inline-list__item_hub']/a";
 
         private readonly Dictionary<string, string> months = new Dictionary<string, string>()
                     {
@@ -60,10 +60,11 @@ namespace DataCollectionNameSpace
         public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
        {
             InfoSite infoSite = new InfoSite();
+            int counter = 1;
             foreach (string link in links)
             {
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
-                Console.WriteLine(myInfoSite.Count);
+                Console.WriteLine(counter+++ "/"+ links.Count);
             }
             return myInfoSite;
         }
@@ -182,14 +183,14 @@ namespace DataCollectionNameSpace
 
             //Поиск хабов, расположенных на сайте
             nodes = htmlDoc.DocumentNode
-                               .SelectNodes(HABS);
+                               .SelectNodes(HUBS);
 
-            infoSite.habs = new List<string>();
+            infoSite.hubs = new List<string>();
             if (nodes != null)
             {
                 foreach (var node in nodes)
                 {
-                    infoSite.habs.Add(node.InnerText);
+                    infoSite.hubs.Add(node.InnerText);
                 }
             }
 
