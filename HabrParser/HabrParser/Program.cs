@@ -13,9 +13,9 @@ namespace HabrParser
         {
             DataCollection Search = new DataCollection();
             List<string> links = new List<string>(); // Лист с ссылками
-            Links Obj_links = new Links();
+            Links ObjLinks = new Links();
             InputOutput IO = new InputOutput();
-            links = Obj_links.GetLinks(IO.GetLinkBlog(), links);
+            links = ObjLinks.GetLinks(IO.GetLinkBlog(), links);
             if (links == null)
             {
                 Console.Write("В данном блоге статей нет!");
@@ -23,10 +23,10 @@ namespace HabrParser
             else
             {
                 List<InfoSite> myInfoSite = new List<InfoSite>(); // Данные с блога 
-                Console.WriteLine("Начинается сбор данных!");
+                Console.WriteLine("Начинается сбор данных...");
                 Search.MainDataCollection(links, myInfoSite);
                 Console.WriteLine("Данные собраны!");
-                Console.WriteLine("Переносим все в CSV-файл!");
+                Console.WriteLine("Переносим все в CSV-файл...");
                 IO.Output(myInfoSite);
                 Console.Write("Готово!");
             }
