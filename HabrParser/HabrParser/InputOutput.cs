@@ -19,13 +19,15 @@ namespace InOut
         private readonly string Sym = ";";
         private readonly string EMPTY = "";
 
-        public string GetLink()
+        public string GetLinkBlog()
         {
             Console.Write("Введите ссылку на блог, в файл Input.txt и нажмите Enter\n");
             FileStream Inpt = new FileStream("Input.txt",
                                                 FileMode.Open);
             StreamReader reader = new StreamReader(Inpt);
             string fileInput = reader.ReadLine();
+            Inpt = null;
+            reader.Close();
             return fileInput;
 
         }
@@ -37,13 +39,13 @@ namespace InOut
                                                 FileAccess.Write);
             StreamWriter Writer = new StreamWriter(File, Encoding.Unicode);
             string Buf = EMPTY;
-            Writer.WriteLine(NAME+Sym+
-                             LINK+Sym+
-                             RAITING+Sym+
-                             BOOTMARKS+Sym+
-                             VIEWS+Sym+
-                             NUMBOFCOMMENTS+Sym+
-                             DATEOFPUBLICATION+Sym+
+            Writer.WriteLine(NAME + Sym +
+                             LINK + Sym +
+                             RAITING + Sym +
+                             BOOTMARKS + Sym +
+                             VIEWS + Sym +
+                             NUMBOFCOMMENTS + Sym +
+                             DATEOFPUBLICATION + Sym +
                              LABEL);
             for (int i = 0; i < myInfoSite.Count; i++)
             {
