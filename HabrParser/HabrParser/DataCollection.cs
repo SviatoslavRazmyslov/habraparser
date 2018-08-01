@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
 using HtmlAgilityPack;
+using System.Windows.Forms;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Globalization;
 
 
 namespace DataCollectionNameSpace
@@ -14,9 +21,10 @@ namespace DataCollectionNameSpace
         public int bootmarks;
         public double views;
         public int numbOfComments;
-        //public string timeOfPublication;
-        public string dateOfPublication;
+        public double dateOfPublication;
         public List<string> labels;
+        public List<string> habs;
+
     }
 
 
@@ -30,30 +38,43 @@ namespace DataCollectionNameSpace
         private readonly string COMMENTS = "//a[@class='post-stats__comments-link']";
         private readonly string DATE = "//span[@class='post__time']";
         private readonly string LABELS = "//li[@class='inline-list__item inline-list__item_tag']/a";
+        private readonly string HABS = "//li[@class='inline-list__item inline-list__item_hub']/a";
 
-        //"//li[@class='inline-list__item inline-list__item_tag']/a"
+        private readonly Dictionary<string, string> months = new Dictionary<string, string>()
+                    {
+                        {"января", "01"},
+                        {"февраля", "02"},
+                        {"марта", "03"},
+                        {"апреля", "04" },
+                        {"мая", "05" },
+                        {"июня", "06" },
+                        {"июля", "07" },
+                        {"августа", "08" },
+                        {"сентября", "09" },
+                        {"октября", "10" },
+                        {"ноября", "11" },
+                        {"декабря", "12" }
 
-            public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
+                    };
+
+        public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
        {
-
             InfoSite infoSite = new InfoSite();
             foreach (string link in links)
             {
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
+                Console.WriteLine(myInfoSite.Count);
             }
             return myInfoSite;
         }
 
-
-
         private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
         {
-
             var htmlDoc = new HtmlWeb().Load(url);
+            
             // Поиск названия сайта       
             infoSite.name = htmlDoc.DocumentNode
                                    .SelectSingleNode(NAME).InnerText;
-
 
             // Поиск ссылки сайта       
             infoSite.link = htmlDoc.DocumentNode
@@ -103,12 +124,48 @@ namespace DataCollectionNameSpace
 
             int.TryParse(buf, out infoSite.numbOfComments);
 
-            /* infoSite.timeOfPublication = htmlDoc.DocumentNode
-                             .SelectSingleNode("//span[@class='post__title-text']").InnerText;*/
-
             // Поиск даты создания сайта       
-            infoSite.dateOfPublication = htmlDoc.DocumentNode
-                                                .SelectSingleNode(DATE).InnerText;
+            buf = htmlDoc.DocumentNode
+                         .SelectSingleNode(DATE).InnerText;
+            //Замена буквенного представления месяца на численное
+            string indexMonth;
+            buf = buf.TrimStart(' ').TrimEnd(' ');
+            var res = buf.Split(' ');
+            months.TryGetValue(res[1], out indexMonth);
+            buf = buf.Replace(res[1], indexMonth);
+            //----------------------------------------------------
+
+            CultureInfo provider = CultureInfo.InvariantCulture;
+            DateTime result = DateTime.Now;
+
+            switch (res.Length)
+            {
+                case 5:
+                    result = DateTime.ParseExact(buf, "d MM yyyy в HH:mm", provider);
+                    break;
+                case 4:
+                    result = DateTime.ParseExact(buf, "d MM в HH:mm", provider);
+                    break;
+                case 3:
+                    if (buf.Contains("сегодня"))
+                    {
+                        result = DateTime.Now;
+                    }
+                    else if (buf.Contains("вчера"))
+                    {
+                        result = DateTime.Now.AddDays(-1);
+                    }
+                    break;
+                default:
+                    result = DateTime.Now;
+                    break;
+            }
+
+
+            //Перевод даты в UNIXTIME число в секундах
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            TimeSpan unixTimeDate = result - origin;
+            infoSite.dateOfPublication = unixTimeDate.TotalSeconds;
 
             // Поиск меток, присутствующих на сайте       
             var nodes = htmlDoc.DocumentNode
@@ -122,7 +179,20 @@ namespace DataCollectionNameSpace
                     infoSite.labels.Add(node.InnerText);
                 }
             }
-                       
+
+            //Поиск хабов, расположенных на сайте
+            nodes = htmlDoc.DocumentNode
+                               .SelectNodes(HABS);
+
+            infoSite.habs = new List<string>();
+            if (nodes != null)
+            {
+                foreach (var node in nodes)
+                {
+                    infoSite.habs.Add(node.InnerText);
+                }
+            }
+
 
             return infoSite;
         }
