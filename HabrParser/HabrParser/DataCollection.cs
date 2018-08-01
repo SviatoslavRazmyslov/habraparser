@@ -57,8 +57,9 @@ namespace DataCollectionNameSpace
             int counter = 1;
             foreach (string link in links)
             {
+                if (counter > 10) break;
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
-                Console.WriteLine(counter+++ "/"+ links.Count);
+                Console.WriteLine((counter++) + "/"+ links.Count);
             }
             return myInfoSite;
         }
@@ -123,11 +124,12 @@ namespace DataCollectionNameSpace
             buf = htmlDoc.DocumentNode
                          .SelectSingleNode(DATE).InnerText;
             //Замена буквенного представления месяца на численное
-            string indexMonth;
+            
             buf = buf.TrimStart(' ').TrimEnd(' ');
             var res = buf.Split(' ');
+
+            string indexMonth;
             months.TryGetValue(res[1], out indexMonth);
-            buf = buf.Replace(res[1], indexMonth);
             //----------------------------------------------------
 
             CultureInfo provider = CultureInfo.InvariantCulture;
@@ -136,19 +138,25 @@ namespace DataCollectionNameSpace
             switch (res.Length)
             {
                 case 5:
+                    buf = buf.Replace(res[1], indexMonth);
                     result = DateTime.ParseExact(buf, "d MM yyyy в HH:mm", provider);
                     break;
                 case 4:
+                    buf = buf.Replace(res[1], indexMonth);
                     result = DateTime.ParseExact(buf, "d MM в HH:mm", provider);
                     break;
                 case 3:
                     if (buf.Contains("сегодня"))
                     {
-                        result = DateTime.Now;
+                        var time = DateTime.ParseExact(buf, "сегодня в HH:mm", provider);
+                        result = DateTime.Now.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
+                        
                     }
                     else if (buf.Contains("вчера"))
                     {
+                        var time = DateTime.ParseExact(buf, "вчера в HH:mm", provider);
                         result = DateTime.Now.AddDays(-1);
+                        result = DateTime.Now.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
                     }
                     break;
                 default:
