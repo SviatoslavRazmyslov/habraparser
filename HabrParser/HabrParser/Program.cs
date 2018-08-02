@@ -13,27 +13,33 @@ namespace HabrParser
     {
         static void Main(string[] args)
         {
-            List<dataInput> dataAllBlogs = new List<dataInput>();
+
+
+            List<InfoMoreBlogsWithHabr> InfoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
+
             InputOutput IO = new InputOutput();
-            IO.Input(args, dataAllBlogs);
+            IO.Input(args, InfoMoreBlogs);
             DataCollection Search = new DataCollection();
-            List<string> links = new List<string>(); // Лист с ссылками
             Links ObjLinks = new Links();
-            ObjLinks.GetLinks(dataAllBlogs);
-            if (links.Count == 0)
-            {
-                Console.Write("В данном блоге статей нет!");
-            }
-            else
-            {
+
+
+
+
+            //ObjLinks.GetLinks();
+            //if (links.Count == 0)
+            //{
+            //    Console.Write("В данном блоге статей нет!");
+            //}
+            //else
+            //{
                 List<InfoSite> myInfoSite = new List<InfoSite>(); // Данные с блога 
                 Console.WriteLine("Начинается сбор данных...");
-                Search.MainDataCollection(links, myInfoSite);
+                //Search.MainDataCollection(links, myInfoSite);
                 Console.WriteLine("Данные собраны!");
                 Console.WriteLine("Переносим все в CSV-файл...");
                 IO.Output(myInfoSite);
                 Console.Write("Готово!");
-            }
+           // }
             Console.ReadKey();
         }
     }

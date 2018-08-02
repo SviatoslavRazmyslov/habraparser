@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace DataCollectionNameSpace
 {
-    struct InfoSite
+    public struct InfoSite
     {
         public string name;
         public string link;
@@ -20,6 +20,17 @@ namespace DataCollectionNameSpace
         public List<string> hubs;
 
     }
+
+    public struct InfoMoreBlogsWithHabr
+    {
+        public string name;
+        public string hrefBlogs;
+        public int searchDepth;
+        public InfoSite InfoSingeBlogs;
+        public string pathOutFile;
+    }
+
+
 
 
     class DataCollection
@@ -48,7 +59,6 @@ namespace DataCollectionNameSpace
                         {"октября", "10" },
                         {"ноября", "11" },
                         {"декабря", "12" }
-
                     };
 
         public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
@@ -60,6 +70,7 @@ namespace DataCollectionNameSpace
                 myInfoSite.Add(DataCollectionOnSite(link, infoSite));
                 Console.WriteLine((counter++) + "/"+ links.Count);
             }
+            
             return myInfoSite;
         }
 
@@ -70,7 +81,7 @@ namespace DataCollectionNameSpace
             // Поиск названия сайта       
             infoSite.name = htmlDoc.DocumentNode
                                    .SelectSingleNode(NAME).InnerText;
-
+            
             // Поиск ссылки сайта       
             infoSite.link = htmlDoc.DocumentNode
                                    .SelectSingleNode(LINK).Attributes["href"].Value;

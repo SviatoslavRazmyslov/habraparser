@@ -6,13 +6,6 @@ using DataCollectionNameSpace;
 
 namespace InOut
 {
-    struct dataInput
-    {
-        public string hrefBlog;
-        public string pathOutFile;
-        public int searchDepth;
-    }
-
 
     class InputOutput
     {
@@ -27,12 +20,12 @@ namespace InOut
         private readonly string HUBS = "Хабы";
         private readonly string Sym = ";";
 
-        public string Input(string[] args, List<dataInput> dataAllBlogs)
+        public void Input(string[] args, List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
         {
-            dataInput dataInputOfFile = new dataInput();
+            InfoMoreBlogsWithHabr InfoSingleBlog = new InfoMoreBlogsWithHabr();
             FileStream Input = new FileStream(args[0], FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(Input);
-            for (int i = 0; i < File.ReadAllLines(args[0]).Length; ++i)
+            for (int i = 0; i < File.ReadAllLines(args[0]).Length; i++)
             {
                 string bufStringData = reader.ReadLine();
                 string[] result = bufStringData.Split(' ');
@@ -41,21 +34,23 @@ namespace InOut
                     if (one.Contains("HREF:"))
                     {
                         string res = one.Replace("HREF:", "");
-                        dataInputOfFile.hrefBlog = res;
+                        InfoSingleBlog.hrefBlogs = res;
+                         
                     }
                     if (one.Contains("NUMBSTR:"))
                     {
                         string res = one.Replace("NUMBSTR:", "");
-                        dataInputOfFile.searchDepth = Convert.ToInt32(res);
+                        InfoSingleBlog.searchDepth = Convert.ToInt32(res);
                     }
                     if (one.Contains("PATHOUT:"))
                     {
                         string res = one.Replace("PATHOUT:", "");
-                        dataInputOfFile.pathOutFile = res;
+                        InfoSingleBlog.pathOutFile = res;
                     }
                 }
-                dataAllBlogs.Add(dataInputOfFile);
+                InfoMoreBlogs.Add(InfoSingleBlog);
             }
+
         }
 
         public void Output(List<InfoSite> myInfoSite)
