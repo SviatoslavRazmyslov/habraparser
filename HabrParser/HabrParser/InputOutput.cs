@@ -6,6 +6,14 @@ using DataCollectionNameSpace;
 
 namespace InOut
 {
+    struct dataInput
+    {
+        public string hrefBlog;
+        public string pathOutFile;
+        public int searchDepth;
+    }
+
+
     class InputOutput
     {
         private readonly string NAME = "Название";
@@ -19,16 +27,36 @@ namespace InOut
         private readonly string HUBS = "Хабы";
         private readonly string Sym = ";";
 
-        public string GetLinkBlog()
+        public string Input(string[] args, List<dataInput> dataAllBlogs)
         {
-            Console.WriteLine("Читаем ссылку на блог...");
-            FileStream Inpt = new FileStream("Input.txt",
-                                                FileMode.Open);
-            StreamReader reader = new StreamReader(Inpt);
-            string fileInput = reader.ReadLine();
-            Inpt = null;
-            reader.Close();
-            Console.WriteLine("Ссылка прочитана!");
+            dataInput dataInputOfFile = new dataInput();
+            FileStream Input = new FileStream(args[0], FileMode.Open, FileAccess.Read);
+            StreamReader reader = new StreamReader(Input);
+            for (int i = 0; i < File.ReadAllLines(args[0]).Length; ++i)
+            {
+                string bufStringData = reader.ReadLine();
+                string[] result = bufStringData.Split(' ');
+                foreach (string one in result)
+                {
+                    if (one.Contains("HREF:"))
+                    {
+                        string res = one.Replace("HREF:", "");
+                        dataInputOfFile.hrefBlog = res;
+                    }
+                    if (one.Contains("NUMBSTR:"))
+                    {
+                        string res = one.Replace("NUMBSTR:", "");
+                        dataInputOfFile.searchDepth = Convert.ToInt32(res);
+                    }
+                    if (one.Contains("PATHOUT:"))
+                    {
+                        string res = one.Replace("PATHOUT:", "");
+                        dataInputOfFile.pathOutFile = res;
+                    }
+                }
+                dataAllBlogs.Add(dataInputOfFile);
+            }
+
             return fileInput;
 
         }
