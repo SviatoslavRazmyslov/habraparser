@@ -56,9 +56,6 @@ namespace InOut
                 }
                 dataAllBlogs.Add(dataInputOfFile);
             }
-
-            return fileInput;
-
         }
 
         public void Output(List<InfoSite> myInfoSite)
