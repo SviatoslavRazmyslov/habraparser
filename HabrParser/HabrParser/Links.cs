@@ -17,9 +17,9 @@ namespace List_Links
         public void GetLinks(dataInput dataSingleBlog, List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
         {
             InfoMoreBlogsWithHabr InfoBlog = new InfoMoreBlogsWithHabr();
-            InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
-            InfoBlog.searchDepth = dataSingleBlog.searchDepth;
-            InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
+            //InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
+            //InfoBlog.searchDepth = dataSingleBlog.searchDepth;
+            //InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
             var web = new HtmlWeb();
             var htmlDoc = web.Load(dataSingleBlog.hrefBlog);
             var nodes = htmlDoc.DocumentNode
@@ -40,7 +40,8 @@ namespace List_Links
                 foreach (string Buf in links)
                 {
                     DataCollection transferObj = new DataCollection();
-                    transferObj.MainDataCollection(links, InfoBlog.InfoSingeBlogs);
+                    foreach(var element in transferObj.MainDataCollection(links))
+                    InfoBlog.InfoSingeBlogs.Add(element);
                     //передаю глобал и локал листы
                     // transferObj.MainDataCollection(InfoMoreBlogs, links);
                 }
