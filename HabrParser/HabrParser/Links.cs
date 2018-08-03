@@ -14,8 +14,12 @@ namespace List_Links
         private readonly string START_PAGE = "https://habr.com";
         private readonly string TITLE_NAME = "//a[@class='page-header__info-title']";
 
-        public void GetLinks(dataInput dataSingleBlog, InfoMoreBlogsWithHabr InfoSingleBlogs)
+        public void GetLinks(dataInput dataSingleBlog, List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
         {
+            InfoMoreBlogsWithHabr InfoBlog = new InfoMoreBlogsWithHabr();
+            InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
+            InfoBlog.searchDepth = dataSingleBlog.searchDepth;
+            InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
             var web = new HtmlWeb();
             var htmlDoc = web.Load(dataSingleBlog.hrefBlog);
             var nodes = htmlDoc.DocumentNode
@@ -36,7 +40,7 @@ namespace List_Links
                 foreach (string Buf in links)
                 {
                     DataCollection transferObj = new DataCollection();
-                    transferObj.MainDataCollection(links, InfoSingleBlogs);
+                    transferObj.MainDataCollection(links, InfoBlog.InfoSingeBlogs);
                     //передаю глобал и локал листы
                     // transferObj.MainDataCollection(InfoMoreBlogs, links);
                 }
@@ -55,6 +59,7 @@ namespace List_Links
                                .SelectNodes(TITLE);
                 counterSearch++;
             }
+            InfoMoreBlogs.Add(InfoBlog);
             return;
         }
     }
