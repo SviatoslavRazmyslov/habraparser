@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using HtmlAgilityPack;
-
+using InOut;
+using DataCollectionNameSpace;
 namespace List_Links
 {
-    
+
     public class Links
     {
         private readonly string TITLE = "//h2[@class='post__title']/a";
@@ -11,25 +12,35 @@ namespace List_Links
                                             "arrows-pagination__item-link_next']";
         private readonly string ATRIB = "href";
         private readonly string START_PAGE = "https://habr.com";
+        private readonly string TITLE_NAME = "//a[@class='page-header__info-title']";
 
-        public void GetLinks(string url, List<string> links)
+        public void GetLinks(dataInput dataSingleBlog, InfoMoreBlogsWithHabr InfoSingleBlogs)
         {
             var web = new HtmlWeb();
-            var htmlDoc = web.Load(url);
+            var htmlDoc = web.Load(dataSingleBlog.hrefBlog);
             var nodes = htmlDoc.DocumentNode
                                .SelectNodes(TITLE);
+            string namm = htmlDoc.DocumentNode.SelectSingleNode(TITLE_NAME).InnerText;
+            List<string> links = new List<string>();
             if (nodes == null)
             {
                 return;
             }
-            while (nodes != null)
+            int counterSearch = 0;
+            while (nodes != null && counterSearch < dataSingleBlog.searchDepth)
             {
                 foreach (HtmlNode node in nodes)
                 {
-                    links.Add(node.Attributes[ATRIB]
-                                  .Value);
+                    links.Add(node.Attributes[ATRIB].Value);
                 }
-
+                foreach (string Buf in links)
+                {
+                    DataCollection transferObj = new DataCollection();
+                    transferObj.MainDataCollection(links, InfoSingleBlogs);
+                    //передаю глобал и локал листы
+                    // transferObj.MainDataCollection(InfoMoreBlogs, links);
+                }
+                nodes = null;
                 var nextPage = htmlDoc.DocumentNode
                                       .SelectSingleNode(NEXT_PAGE);
 
@@ -42,6 +53,7 @@ namespace List_Links
                                                         .Value);
                 nodes = htmlDoc.DocumentNode
                                .SelectNodes(TITLE);
+                counterSearch++;
             }
             return;
         }
