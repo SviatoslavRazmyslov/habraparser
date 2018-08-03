@@ -23,10 +23,9 @@ namespace DataCollectionNameSpace
 
     public struct InfoMoreBlogsWithHabr
     {
-        public string name;
         public string hrefBlogs;
         public int searchDepth;
-        public InfoSite InfoSingeBlogs;
+        public List<InfoSite> InfoSingeBlogs;
         public string pathOutFile;
     }
 
@@ -61,17 +60,17 @@ namespace DataCollectionNameSpace
                         {"декабря", "12" }
                     };
 
-        public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> myInfoSite)
+        public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> InfoSingleBlog)
        {
             InfoSite infoSite = new InfoSite();
             int counter = 1;
             foreach (string link in links)
             {
-                myInfoSite.Add(DataCollectionOnSite(link, infoSite));
+                InfoSingleBlog.Add(DataCollectionOnSite(link, infoSite));
                 Console.WriteLine((counter++) + "/"+ links.Count);
             }
             
-            return myInfoSite;
+            return InfoSingleBlog;
         }
 
         private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
