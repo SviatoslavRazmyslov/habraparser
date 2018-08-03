@@ -63,14 +63,15 @@ namespace DataCollectionNameSpace
         public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> InfoSingleBlog)
        {
             InfoSite infoSite = new InfoSite();
+            List<InfoSite> myInfoSite = new List<InfoSite>();
             int counter = 1;
             foreach (string link in links)
             {
-                InfoSingleBlog.Add(DataCollectionOnSite(link, infoSite));
+                myInfoSite.Add(DataCollectionOnSite(link, infoSite));
                 Console.WriteLine((counter++) + "/"+ links.Count);
             }
             
-            return InfoSingleBlog;
+            return myInfoSite;
         }
 
         private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
