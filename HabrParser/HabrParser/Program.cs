@@ -24,7 +24,13 @@ namespace HabrParser
             int i = 0;
             foreach (var dataSingleBlog in DataAllBlogs)
             {
-                ObjLinks.GetLinks(dataSingleBlog, InfoMoreBlogs[i++]);
+                ObjLinks.GetLinks(dataSingleBlog, InfoMoreBlogs);
+                i++;
+            }
+
+            foreach (var element in InfoMoreBlogs)
+            {
+                IO.Output(element);
             }
             //ObjLinks.GetLinks();
             //if (links.Count == 0)
@@ -33,13 +39,13 @@ namespace HabrParser
             //}
             //else
             //{
-                List<InfoSite> myInfoSite = new List<InfoSite>(); // Данные с блога 
-                Console.WriteLine("Начинается сбор данных...");
-                //Search.MainDataCollection(links, myInfoSite);
-                Console.WriteLine("Данные собраны!");
-                Console.WriteLine("Переносим все в CSV-файл...");
-                IO.Output(myInfoSite);
-                Console.Write("Готово!");
+                //List<InfoSite> myInfoSite = new List<InfoSite>(); // Данные с блога 
+                //Console.WriteLine("Начинается сбор данных...");
+                ////Search.MainDataCollection(links, myInfoSite);
+                //Console.WriteLine("Данные собраны!");
+                //Console.WriteLine("Переносим все в CSV-файл...");
+                //IO.Output(myInfoSite);
+                //Console.Write("Готово!");
            // }
             Console.ReadKey();
         }

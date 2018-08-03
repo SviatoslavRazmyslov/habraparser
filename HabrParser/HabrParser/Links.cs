@@ -2,6 +2,7 @@
 using HtmlAgilityPack;
 using InOut;
 using DataCollectionNameSpace;
+using System;
 namespace List_Links
 {
 
@@ -17,9 +18,10 @@ namespace List_Links
         public void GetLinks(dataInput dataSingleBlog, List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
         {
             InfoMoreBlogsWithHabr InfoBlog = new InfoMoreBlogsWithHabr();
-            //InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
-            //InfoBlog.searchDepth = dataSingleBlog.searchDepth;
-            //InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
+            InfoBlog.InfoSingeBlogs = new List<InfoSite>();
+            InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
+            InfoBlog.searchDepth = dataSingleBlog.searchDepth;
+            InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
             var web = new HtmlWeb();
             var htmlDoc = web.Load(dataSingleBlog.hrefBlog);
             var nodes = htmlDoc.DocumentNode
@@ -30,21 +32,21 @@ namespace List_Links
             {
                 return;
             }
-            int counterSearch = 0;
+            int counterSearch = 0, u = 0 ;
             while (nodes != null && counterSearch < dataSingleBlog.searchDepth)
             {
+                Console.Clear();
+                Console.WriteLine((u++));
                 foreach (HtmlNode node in nodes)
                 {
                     links.Add(node.Attributes[ATRIB].Value);
                 }
-                foreach (string Buf in links)
-                {
-                    DataCollection transferObj = new DataCollection();
-                    foreach(var element in transferObj.MainDataCollection(links))
+                DataCollection transferObj = new DataCollection();
+                foreach (var element in transferObj.MainDataCollection(links))
                     InfoBlog.InfoSingeBlogs.Add(element);
-                    //передаю глобал и локал листы
-                    // transferObj.MainDataCollection(InfoMoreBlogs, links);
-                }
+                //передаю глобал и локал листы
+                // transferObj.MainDataCollection(InfoMoreBlogs, links);    
+                links.RemoveRange(0, links.Count);
                 nodes = null;
                 var nextPage = htmlDoc.DocumentNode
                                       .SelectSingleNode(NEXT_PAGE);

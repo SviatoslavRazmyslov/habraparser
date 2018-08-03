@@ -6,7 +6,7 @@ using DataCollectionNameSpace;
 
 namespace InOut
 {
-    struct dataInput
+    public struct dataInput
     {
         public string hrefBlog;
         public string pathOutFile;
@@ -59,9 +59,9 @@ namespace InOut
 
         }
 
-        public void Output(List<InfoSite> myInfoSite)
+        public void Output(InfoMoreBlogsWithHabr myInfoBlog)
         {
-            FileStream File = new FileStream("Company.csv",
+            FileStream File = new FileStream(myInfoBlog.pathOutFile,
                                                 FileMode.Create,
                                                 FileAccess.Write);
             StreamWriter Writer = new StreamWriter(File, Encoding.Unicode);
@@ -75,18 +75,18 @@ namespace InOut
                              LABEL + Sym +
                              HUBS);
 
-            for (int i = 0; i < myInfoSite.Count; i++)
+            for (int i = 0; i < myInfoBlog.InfoSingeBlogs.Count; i++)
             {
-                string buf_labels = string.Join(", ", myInfoSite[i].labels);
-                string buf_hubs = string.Join(", ", myInfoSite[i].hubs);
+                string buf_labels = string.Join(", ", myInfoBlog.InfoSingeBlogs[i].labels);
+                string buf_hubs = string.Join(", ", myInfoBlog.InfoSingeBlogs[i].hubs);
 
-                Writer.WriteLine(myInfoSite[i].name + Sym +
-                                 myInfoSite[i].link + Sym +
-                                 myInfoSite[i].rating + Sym +
-                                 myInfoSite[i].bootmarks + Sym +
-                                 myInfoSite[i].views + Sym +
-                                 myInfoSite[i].numbOfComments + Sym +
-                                 myInfoSite[i].dateOfPublication + Sym +
+                Writer.WriteLine(myInfoBlog.InfoSingeBlogs[i].name + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].link + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].rating + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].bootmarks + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].views + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].numbOfComments + Sym +
+                                 myInfoBlog.InfoSingeBlogs[i].dateOfPublication + Sym +
                                  buf_labels + Sym +
                                  buf_hubs);
             }
