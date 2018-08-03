@@ -6,6 +6,12 @@ using DataCollectionNameSpace;
 
 namespace InOut
 {
+    struct dataInput
+    {
+        public string hrefBlog;
+        public string pathOutFile;
+        public int searchDepth;
+    }
 
     class InputOutput
     {
@@ -20,9 +26,9 @@ namespace InOut
         private readonly string HUBS = "Хабы";
         private readonly string Sym = ";";
 
-        public void Input(string[] args, List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
+        public void Input(string[] args, List<dataInput> dataAllBlogs)
         {
-            InfoMoreBlogsWithHabr InfoSingleBlog = new InfoMoreBlogsWithHabr();
+            dataInput dataInputSingle = new dataInput();
             FileStream Input = new FileStream(args[0], FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(Input);
             for (int i = 0; i < File.ReadAllLines(args[0]).Length; i++)
@@ -34,21 +40,21 @@ namespace InOut
                     if (one.Contains("HREF:"))
                     {
                         string res = one.Replace("HREF:", "");
-                        InfoSingleBlog.hrefBlogs = res;
+                        dataInputSingle.hrefBlog = res;
                          
                     }
                     if (one.Contains("NUMBSTR:"))
                     {
                         string res = one.Replace("NUMBSTR:", "");
-                        InfoSingleBlog.searchDepth = Convert.ToInt32(res);
+                        dataInputSingle.searchDepth = Convert.ToInt32(res);
                     }
                     if (one.Contains("PATHOUT:"))
                     {
                         string res = one.Replace("PATHOUT:", "");
-                        InfoSingleBlog.pathOutFile = res;
+                        dataInputSingle.pathOutFile = res;
                     }
                 }
-                InfoMoreBlogs.Add(InfoSingleBlog);
+                dataAllBlogs.Add(dataInputSingle);
             }
 
         }

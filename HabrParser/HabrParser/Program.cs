@@ -16,15 +16,16 @@ namespace HabrParser
 
 
             List<InfoMoreBlogsWithHabr> InfoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
-
+            List<dataInput> DataAllBlogs = new List<dataInput>();
             InputOutput IO = new InputOutput();
-            IO.Input(args, InfoMoreBlogs);
+            IO.Input(args, DataAllBlogs);
             DataCollection Search = new DataCollection();
             Links ObjLinks = new Links();
-
-
-
-
+            int i = 0;
+            foreach (var dataSingleBlog in DataAllBlogs)
+            {
+                ObjLinks.GetLinks(dataSingleBlog, InfoMoreBlogs[i++]);
+            }
             //ObjLinks.GetLinks();
             //if (links.Count == 0)
             //{
