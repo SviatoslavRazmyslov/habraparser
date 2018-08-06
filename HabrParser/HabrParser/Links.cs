@@ -22,9 +22,24 @@ namespace List_Links
             InfoBlog.hrefBlogs = dataSingleBlog.hrefBlog;
             InfoBlog.searchDepth = dataSingleBlog.searchDepth;
             InfoBlog.pathOutFile = dataSingleBlog.pathOutFile;
-            var web = new HtmlWeb();
-            var htmlDoc = web.Load(dataSingleBlog.hrefBlog);
-            var nodes = htmlDoc.DocumentNode
+            HtmlWeb web = new HtmlWeb();
+            bool check = false;
+            HtmlDocument htmlDoc = null;
+            while (!check)
+            {
+                try
+                {
+                    htmlDoc = web.Load(dataSingleBlog.hrefBlog);
+                    check = true;
+                }
+                catch
+                {
+                    check = false;
+                    Console.WriteLine("Проверьте соединение с интернетом и нажмите Enter");
+                    Console.ReadKey();
+                }
+            }
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode
                                .SelectNodes(TITLE);
             string namm = htmlDoc.DocumentNode.SelectSingleNode(TITLE_NAME).InnerText;
             List<string> links = new List<string>();
@@ -56,8 +71,23 @@ namespace List_Links
                     break;
                 }
 
-                htmlDoc = web.Load(START_PAGE + nextPage.Attributes[ATRIB]
-                                                        .Value);
+                check = false;
+                while (!check)
+                {
+                    try
+                    {
+                        htmlDoc = web.Load(START_PAGE + nextPage.Attributes[ATRIB]
+                                                                .Value);
+                        check = true;
+                    }
+                    catch
+                    {
+                        check = false;
+                        Console.WriteLine("Проверьте соединение с интернетом и нажмите Enter");
+                        Console.ReadKey();
+                    }
+                }
+
                 nodes = htmlDoc.DocumentNode
                                .SelectNodes(TITLE);
                 counterSearch++;
