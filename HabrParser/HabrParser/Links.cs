@@ -35,8 +35,8 @@ namespace List_Links
             int counterSearch = 0, u = 0 ;
             while (nodes != null && counterSearch < dataSingleBlog.searchDepth)
             {
-                Console.Clear();
-                Console.WriteLine((u++));
+                //Console.Clear();
+                //Console.WriteLine((u++));
                 foreach (HtmlNode node in nodes)
                 {
                     links.Add(node.Attributes[ATRIB].Value);

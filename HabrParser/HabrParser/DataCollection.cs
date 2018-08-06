@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HtmlAgilityPack;
 using System.Globalization;
+using System.Threading.Tasks;
 
 
 namespace DataCollectionNameSpace
@@ -60,17 +61,68 @@ namespace DataCollectionNameSpace
                         {"декабря", "12" }
                     };
 
-        public List<InfoSite> MainDataCollection(List<string> links, List<InfoSite> InfoSingleBlog)
-       {
+        public List<InfoSite> MainDataCollection(List<string> links)
+        {
             InfoSite infoSite = new InfoSite();
             List<InfoSite> myInfoSite = new List<InfoSite>();
-            int counter = 1;
-            foreach (string link in links)
+            List<InfoSite> myInfoSite1 = new List<InfoSite>();
+            List<InfoSite> myInfoSite2 = new List<InfoSite>();
+            //List<string> links1 = new List<string>();
+            //List<string> links2 = new List<string>();
+            //links1 = links.GetRange(0, links.Count / 2);
+            //links2 = links.GetRange(links.Count / 2, links.Count);
+
+            //Parallel.For(0, links.Count,
+            //    index => {
+            //        myInfoSite.Add(DataCollectionOnSite(links[index], infoSite));
+            // });
+
+            List <Task<InfoSite>> tasks1 = new List<Task<InfoSite>>(10);
+
+            for(int index = 0; index<links.Count; index++)
             {
-                myInfoSite.Add(DataCollectionOnSite(link, infoSite));
-                Console.WriteLine((counter++) + "/"+ links.Count);
+                string url = links[index];
+                tasks1.Add(new Task<InfoSite>(() => DataCollectionOnSite(url, infoSite)));
             }
-            
+
+            foreach (var t in tasks1)
+                t.Start();
+
+            Task.WaitAll(tasks1.ToArray()); // ожидаем завершения задач 
+
+            foreach (var t in tasks1)
+                myInfoSite.Add(t.Result);
+
+
+            //    for (int i = 0; i < links.Count / 2; i++)
+            //{
+            //    Task<InfoSite> task1 = new Task<InfoSite>(() => DataCollectionOnSite(links[i], infoSite));
+            //    Task<InfoSite> task2 = new Task<InfoSite>(() => DataCollectionOnSite(links[i + 5], infoSite));
+            //    task1.Start();
+            //    task2.Start();
+            //    //task1.Wait();
+            //    //task2.Wait();
+            //    myInfoSite1.Add(task1.Result);
+            //    myInfoSite2.Add(task2.Result);
+
+            //}
+            //foreach (var info in myInfoSite1) {
+            //    myInfoSite.Add(info);
+            //}
+            //foreach (var info in myInfoSite2) {
+            //    myInfoSite.Add(info);
+            //}
+            //Task[] tasks = new Task[2]
+            //{
+            //    task1,
+            //    task2
+            //}; 
+            //foreach(var task in tasks)
+            //{
+            //    task.Start();
+            //}
+            //Task.WaitAll(tasks);
+
             return myInfoSite;
         }
 

@@ -90,6 +90,7 @@ namespace InOut
                                  buf_labels + Sym +
                                  buf_hubs);
             }
+            //Закрытие файла
             Writer.Close();
         }
     }

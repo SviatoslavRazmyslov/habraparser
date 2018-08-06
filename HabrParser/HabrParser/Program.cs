@@ -4,8 +4,8 @@ using List_Links;
 using DataCollectionNameSpace;
 using InOut;
 using System.IO;
-
-
+using System.Threading.Tasks;
+using System.Threading;
 namespace HabrParser
 {
 
@@ -13,8 +13,6 @@ namespace HabrParser
     {
         static void Main(string[] args)
         {
-
-
             List<InfoMoreBlogsWithHabr> InfoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
             List<dataInput> DataAllBlogs = new List<dataInput>();
             InputOutput IO = new InputOutput();
