@@ -61,37 +61,33 @@ namespace DataCollectionNameSpace
                         {"декабря", "12" }
                     };
 
+
         public List<InfoSite> MainDataCollection(List<string> links)
         {
             InfoSite infoSite = new InfoSite();
             List<InfoSite> myInfoSite = new List<InfoSite>();
-            List<InfoSite> myInfoSite1 = new List<InfoSite>();
-            List<InfoSite> myInfoSite2 = new List<InfoSite>();
-            //List<string> links1 = new List<string>();
-            //List<string> links2 = new List<string>();
-            //links1 = links.GetRange(0, links.Count / 2);
-            //links2 = links.GetRange(links.Count / 2, links.Count);
 
-            //Parallel.For(0, links.Count,
-            //    index => {
-            //        myInfoSite.Add(DataCollectionOnSite(links[index], infoSite));
-            // });
+            //Рабочее решение!!!!!!!!!!!!!!!
+            List<Task<InfoSite>> tasks1 = new List<Task<InfoSite>>(10);
 
-            List <Task<InfoSite>> tasks1 = new List<Task<InfoSite>>(10);
-
-            for(int index = 0; index<links.Count; index++)
+            for (int index = 0; index < links.Count; index++)
             {
                 string url = links[index];
                 tasks1.Add(new Task<InfoSite>(() => DataCollectionOnSite(url, infoSite)));
             }
 
             foreach (var t in tasks1)
+            {
                 t.Start();
+            }
 
-            Task.WaitAll(tasks1.ToArray()); // ожидаем завершения задач 
+            Task.WaitAll(tasks1.ToArray());
+
+            // ожидаем завершения задач 
 
             foreach (var t in tasks1)
                 myInfoSite.Add(t.Result);
+            //---------------------------------------------------
 
 
             //    for (int i = 0; i < links.Count / 2; i++)
@@ -122,14 +118,29 @@ namespace DataCollectionNameSpace
             //    task.Start();
             //}
             //Task.WaitAll(tasks);
-
             return myInfoSite;
         }
 
         private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
         {
-            HtmlDocument htmlDoc = new HtmlWeb().Load(url);
-            
+
+            bool check = false;
+            HtmlDocument htmlDoc = null;
+            while (!check)
+            {
+                try
+                {
+                    htmlDoc = new HtmlWeb().Load(url);
+                    check = true;
+                }
+                catch
+                {
+                    check = false;
+                    Console.WriteLine("Проверьте соединение с интернетом и нажмите Enter");
+                    Console.ReadKey();
+                }
+            }
+
             // Поиск названия сайта       
             infoSite.name = htmlDoc.DocumentNode
                                    .SelectSingleNode(NAME).InnerText;
