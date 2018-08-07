@@ -1,51 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using List_Links;
-using DataCollectionNameSpace;
-using InOut;
-using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
-namespace HabrParser
-{
+using HabrParserLib;
 
+namespace ConsoleApp1
+{
     class Program
     {
         static void Main(string[] args)
         {
-            List<InfoMoreBlogsWithHabr> InfoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
-            List<dataInput> DataAllBlogs = new List<dataInput>();
-            InputOutput IO = new InputOutput();
-            IO.Input(args, DataAllBlogs);
-            DataCollection Search = new DataCollection();
-            Links ObjLinks = new Links();
-            int i = 0;
-            foreach (var dataSingleBlog in DataAllBlogs)
-            {
-                ObjLinks.GetLinks(dataSingleBlog, InfoMoreBlogs);
-                i++;
-            }
-
-            foreach (var element in InfoMoreBlogs)
-            {
-                IO.Output(element);
-            }
-            //ObjLinks.GetLinks();
-            //if (links.Count == 0)
-            //{
-            //    Console.Write("В данном блоге статей нет!");
-            //}
-            //else
-            //{
-                //List<InfoSite> myInfoSite = new List<InfoSite>(); // Данные с блога 
-                //Console.WriteLine("Начинается сбор данных...");
-                ////Search.MainDataCollection(links, myInfoSite);
-                //Console.WriteLine("Данные собраны!");
-                //Console.WriteLine("Переносим все в CSV-файл...");
-                //IO.Output(myInfoSite);
-                //Console.Write("Готово!");
-           // }
+            DateTime start = DateTime.Now;
+            
+            Parser obj = new Parser();
+            obj.IncorrectData += Obj_IncorrectData;
+            obj.InvalidFilePath += Obj_InvalidFilePath;
+            obj.UnableToConnect += Obj_UnableToConnect;
+            obj.CallFunctions(args);
+            TimeSpan rezult = DateTime.Now - start;
+            Console.WriteLine(rezult.ToString());
+            Console.WriteLine("Готово.");
             Console.ReadKey();
+
+        }
+
+        private static void Obj_UnableToConnect()
+        {
+            Console.WriteLine("Check your internet connection...");
+            Console.ReadKey();
+        }
+
+        private static void Obj_InvalidFilePath()
+        {
+            Console.Write("Invalid File Path");
+        }
+
+        private static void Obj_IncorrectData()
+        {
+            Console.Write("Incorrect data in the file");
         }
     }
 }
