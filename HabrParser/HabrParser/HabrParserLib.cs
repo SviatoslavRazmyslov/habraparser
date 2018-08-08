@@ -104,34 +104,32 @@ namespace HabrParserLib
                     };
 
 
-        private List<InfoSite> MainDataCollection(List<string> links)
+        private List<InfoSite> ProcessArticleLinks(List<string> links)
         {
             InfoSite infoSite = new InfoSite();
             List<InfoSite> myInfoSite = new List<InfoSite>();
-            List<Task<InfoSite>> tasks1 = new List<Task<InfoSite>>(10);
+            List<Task<InfoSite>> tasks = new List<Task<InfoSite>>(10);
 
             for (int index = 0; index < links.Count; index++)
             {
                 string url = links[index];
-                tasks1.Add(new Task<InfoSite>(() => DataCollectionOnSite(url, infoSite)));
+                tasks.Add(Task.Factory.StartNew(() => ProcessArticle(url, infoSite)));
             }
 
-            foreach (var t in tasks1)
-            {
-                t.Start();
-            }
+            Task.WaitAll(tasks.ToArray());
 
-            Task.WaitAll(tasks1.ToArray());
-
-            foreach (var t in tasks1)
+            foreach (var t in tasks)
                 myInfoSite.Add(t.Result);
 
             return myInfoSite;
         }
 
-        private InfoSite DataCollectionOnSite(string url, InfoSite infoSite)
+        private InfoSite ProcessArticle(string url, InfoSite infoSite)
         {
-
+            //TODO сделать здесь обработку потенциальных исключений (try\catch),
+            //с выдачей сообщений через event - чтобы исключение не шло выше (из task'а)
+            //и остальные task'и продолжали работать - если произошла ошибка на обработке одного task'а
+            //программа не должна завершить работу - она должна выдать сообщение об ошибке, и продолжать работать
             int check = 0;
             HtmlDocument htmlDoc = null;
             while (check >= 0)
@@ -425,17 +423,15 @@ namespace HabrParserLib
 
             List<string> links = new List<string>();
             if (nodes == null)
-            {
                 return;
-            }
+
             int counterSearch = 0;
             while (nodes != null && counterSearch < dataSingleBlog.searchDepth)
             {
                 foreach (HtmlNode node in nodes)
-                {
                     links.Add(node.Attributes[_atrib].Value);
-                }
-                foreach (var element in MainDataCollection(links))
+
+                foreach (var element in ProcessArticleLinks(links))
                     InfoBlog.InfoSingeBlogs.Add(element);
                 //передаю глобал и локал листы
                 // transferObj.MainDataCollection(InfoMoreBlogs, links);    
@@ -465,6 +461,9 @@ namespace HabrParserLib
                         check++;
                         if (check >= 4)
                         {
+                            //TODO Если одну страницу не смогли открыть после нескольких попыток,
+                            //не завершаем работу (не кидаем исключение), а выдаём через event сообщение
+                            //и пробуем работать дальше, со следующей страницей \ блогом
                             Environment.Exit(05);
                     }
 
