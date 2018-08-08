@@ -47,9 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataCollection.cs" />
-    <Compile Include="InputOutput.cs" />
-    <Compile Include="Links.cs" />
+    <Compile Include="HabrParserLib.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
