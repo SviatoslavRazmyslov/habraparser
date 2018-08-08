@@ -110,11 +110,8 @@ namespace HabrParserLib
             List<InfoSite> myInfoSite = new List<InfoSite>();
             List<Task<InfoSite>> tasks = new List<Task<InfoSite>>(10);
 
-            for (int index = 0; index < links.Count; index++)
-            {
-                string url = links[index];
+            foreach(string url in links)
                 tasks.Add(Task.Factory.StartNew(() => ProcessArticle(url, infoSite)));
-            }
 
             Task.WaitAll(tasks.ToArray());
 
