@@ -48,13 +48,17 @@ namespace HabrParserLib
 
         public event StatusBar IncorrectData;
 
-        public void CallFunctions(string[] args)
+        public void Parse(string[] args)
         {
-            List<InfoMoreBlogsWithHabr> InfoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
+            List<InfoMoreBlogsWithHabr> infoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
             List<dataInput> DataAllBlogs = new List<dataInput>();
+            //TODO обработка args должна быть вне класса Parser
             if (args.Length == 0)
             {
                 InvalidFilePath();
+                //TODO Убрать отовсюду использование Environment.Exit.
+                //Если класс не может продолжать работу после какой-либо ошибки, то он должен кинуть исключение, которое нужно поймать в месте, где
+                //был создан экземпляр класса, и выдать соответствующее сообщение об ошибке.
                 Environment.Exit(04);
             }
                 
@@ -63,10 +67,10 @@ namespace HabrParserLib
 
             foreach (var dataSingleBlog in DataAllBlogs)
             {
-                GetLinks(dataSingleBlog, InfoMoreBlogs);
+                GetLinks(dataSingleBlog, infoMoreBlogs);
             }
 
-            foreach (var element in InfoMoreBlogs)
+            foreach (var element in infoMoreBlogs)
             {
                 Output(element);
             }
@@ -139,6 +143,8 @@ namespace HabrParserLib
                 }
                 catch
                 {
+                    //TODO Небезопасный вызов event'а - будет NullreferenceException если никто не подписан на него
+                    //нужно писать EventName?.Invoke().
                     UnableToConnect();
                     check++;
                     if (check >= 4)
