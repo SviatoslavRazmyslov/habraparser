@@ -13,23 +13,23 @@ namespace HabrParserLib
     public class Options
     {
         [Option('o', "output", Required = true, HelpText = "Output files to be processed.")]
-        public string outputFile { get; set; }
+        public string OutputFile { get; set; }
 
-        [Option('d', "depth", Required = true, HelpText = "Output files to be processed.")]
-        public int depthSearch { get; set; }
+        [Option('d', "depth", HelpText = "Depth of search in a blog (set -1 for unlimited depth).", Default = -1)]
+        public int SearchDepth { get; set; }
 
-        [Option('i', "input",Required = true,HelpText = "Input files to be processed.")]
-        public string inputFile { get; set; }
+        [Option('i', "input", Required = true,HelpText = "Input files to be processed.")]
+        public string InputFile { get; set; }
     }
 
-    public struct dataInput
+    public struct DataInput
     {
-        public List<string> hrefBlog;
+        public List<string> BlogUrls;
         public string pathOutFile;
         public int searchDepth;
     }
 
-    public struct InfoSite
+    public struct ArticleInfo
     {
         public string name;
         public string link;
@@ -44,10 +44,10 @@ namespace HabrParserLib
 
     }
 
-    public struct InfoMoreBlogsWithHabr
+    public struct BlogInfo
     {
         public string hrefBlogs;
-        public List<InfoSite> InfoSingeBlogs;
+        public List<ArticleInfo> InfoSingeBlogs;
     }
 
     public class Parser
@@ -56,7 +56,7 @@ namespace HabrParserLib
         private readonly string _name = "//span[@class='post__title-text']";
         private readonly string _link = "//head/link[@rel='canonical']";
         private readonly string _raiting = "//ul/li/div[@class='voting-wjt voting-wjt_post js-post-vote']/span";
-        private readonly string _bootmarks = "//span[@class='bookmark__counter js-favs_count']";
+        private readonly string _bookmarks = "//span[@class='bookmark__counter js-favs_count']";
         private readonly string _views = "//span[@class='post-stats__views-count']";
         private readonly string _comments = "//a[@class='post-stats__comments-link']";
         private readonly string _date = "//span[@class='post__time']";
@@ -71,17 +71,17 @@ namespace HabrParserLib
 
         public event EventHandler<string> ErrorOccured;
 
-        public List<InfoMoreBlogsWithHabr> Parse(Options arguments)
+        public List<BlogInfo> Parse(String outputFile, String inputFile, int depth)
         {
-            List<InfoMoreBlogsWithHabr> infoMoreBlogs = new List<InfoMoreBlogsWithHabr>();
-            dataInput DataAllBlogs = new dataInput();
+            List<BlogInfo> infoMoreBlogs = new List<BlogInfo>();
+            DataInput dataAllBlogs = new DataInput();
 
-            DataAllBlogs.pathOutFile = arguments.outputFile;
-            DataAllBlogs.searchDepth = arguments.depthSearch;
-            DataAllBlogs.hrefBlog =  Input(arguments);
+            dataAllBlogs.pathOutFile = outputFile;
+            dataAllBlogs.searchDepth = depth;
+            dataAllBlogs.BlogUrls =  Input(inputFile);
 
-            foreach (string dataSingleBlog in DataAllBlogs.hrefBlog)
-                    GetLinks(dataSingleBlog, DataAllBlogs, infoMoreBlogs);
+            foreach (string blogUrl in dataAllBlogs.BlogUrls)
+                ProcessBlog(blogUrl, dataAllBlogs, infoMoreBlogs);
 
             return infoMoreBlogs;
         }
@@ -104,11 +104,11 @@ namespace HabrParserLib
                     };
 
 
-        private List<InfoSite> ProcessArticleLinks(List<string> links)
+        private List<ArticleInfo> ProcessArticleLinks(List<string> links)
         {
-            InfoSite infoSite = new InfoSite();
-            List<InfoSite> myInfoSite = new List<InfoSite>();
-            List<Task<InfoSite>> tasks = new List<Task<InfoSite>>(10);
+            ArticleInfo infoSite = new ArticleInfo();
+            List<ArticleInfo> myInfoSite = new List<ArticleInfo>();
+            List<Task<ArticleInfo>> tasks = new List<Task<ArticleInfo>>(10);
             foreach (string url in links)
                 tasks.Add(Task.Factory.StartNew(() => ProcessArticle(url, infoSite)));
             
@@ -120,7 +120,7 @@ namespace HabrParserLib
             return myInfoSite;
         }
 
-        private InfoSite ProcessArticle(string url, InfoSite infoSite)
+        private ArticleInfo ProcessArticle(string url, ArticleInfo infoSite)
         {
             HtmlDocument htmlDoc = null;
                 try
@@ -129,7 +129,7 @@ namespace HabrParserLib
                 }
                 catch
                 {
-                    ErrorOccured?.Invoke(this, "UnableToConnect");
+                    ErrorOccured?.Invoke(this, "Unable To Connect: {0}");
                     return infoSite;
                 }
 
@@ -155,7 +155,7 @@ namespace HabrParserLib
                 infoSite.rating = Convert.ToInt32(buf);
 
             // Поиск колличества закладок данного сайта       
-            buf = htmlDoc.DocumentNode.SelectSingleNode(_bootmarks).InnerText;
+            buf = htmlDoc.DocumentNode.SelectSingleNode(_bookmarks).InnerText;
             infoSite.bootmarks = Convert.ToInt32(buf);
 
             //Поиск колличества просмотров 
@@ -250,14 +250,14 @@ namespace HabrParserLib
             return infoSite;
         }
 
-        private List<string> Input(Options args)
+        private List<string> Input(String inputFile)
         {
             List<string> listAllLinks = new List<string>();
 
-            FileStream Input = new FileStream(args.inputFile, FileMode.Open, FileAccess.Read);
+            FileStream Input = new FileStream(inputFile, FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(Input);
 
-            foreach (string link in File.ReadAllLines(args.inputFile))
+            foreach (string link in File.ReadAllLines(inputFile))
             {
                 listAllLinks.Add(link);
             }
@@ -265,12 +265,12 @@ namespace HabrParserLib
             return listAllLinks;
         }
 
-        private void GetLinks(string linkBlog, 
-                              dataInput Data, 
-                              List<InfoMoreBlogsWithHabr> InfoMoreBlogs)
+        private void ProcessBlog(string linkBlog, 
+                                 DataInput Data, 
+                                 List<BlogInfo> InfoMoreBlogs)
         {
-            InfoMoreBlogsWithHabr InfoBlog = new InfoMoreBlogsWithHabr();
-            InfoBlog.InfoSingeBlogs = new List<InfoSite>();
+            BlogInfo InfoBlog = new BlogInfo();
+            InfoBlog.InfoSingeBlogs = new List<ArticleInfo>();
             InfoBlog.hrefBlogs = linkBlog;
 
             HtmlWeb web = new HtmlWeb();
@@ -298,8 +298,8 @@ namespace HabrParserLib
             if (nodes == null)
                 return;
 
-            int counterSearch = 0;
-            while (nodes != null && counterSearch < Data.searchDepth)
+            int pagesCount = 0;
+            while (nodes != null && pagesCount < Data.searchDepth)
             {
                 foreach (HtmlNode node in nodes)
                     links.Add(node.Attributes[_atrib].Value);
@@ -307,7 +307,7 @@ namespace HabrParserLib
                 foreach (var element in ProcessArticleLinks(links))
                     InfoBlog.InfoSingeBlogs.Add(element);
 
-                links.RemoveRange(0, links.Count);
+                links.Clear();
                 nodes = null;
                 var nextPage = htmlDoc.DocumentNode.SelectSingleNode(_next_page);
 
@@ -335,7 +335,7 @@ namespace HabrParserLib
                     }
                 }
                 nodes = htmlDoc.DocumentNode.SelectNodes(_title);
-                counterSearch++;
+                pagesCount++;
             }
             InfoMoreBlogs.Add(InfoBlog);
             return;

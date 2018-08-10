@@ -21,7 +21,7 @@ namespace OutputInfo
         private static readonly string _hubsIo = "Хабы";
         private static readonly string _symIo = ";";
 
-        static public void Output(List<InfoMoreBlogsWithHabr> myInfoBlog, string namePathOutput)
+        static public void Output(List<BlogInfo> myInfoBlog, string namePathOutput)
         {
             FileStream File = new FileStream(namePathOutput, FileMode.Create, FileAccess.Write);
             StreamWriter Writer = new StreamWriter(File, Encoding.Unicode);
@@ -37,13 +37,14 @@ namespace OutputInfo
                              + _labelIo + _symIo
                              + _hubsIo);
 
+            //TODO переделать на foreach
             for (int i = 0; i < myInfoBlog.Count; i++)
             {
                 for (int j = 0; j < myInfoBlog[i].InfoSingeBlogs.Count; j++)
                 {
                     string bufLabels = string.Join(", ", myInfoBlog[i].InfoSingeBlogs[j].labels);
                     string bufHubs = string.Join(", ", myInfoBlog[i].InfoSingeBlogs[j].hubs);
-
+                    //TODO сделать через String.Join
                     Writer.WriteLine(myInfoBlog[i].InfoSingeBlogs[j].name + _symIo
                                      + myInfoBlog[i].InfoSingeBlogs[j].link + _symIo
                                      + myInfoBlog[i].InfoSingeBlogs[j].rating + _symIo
