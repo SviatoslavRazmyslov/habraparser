@@ -33,4 +33,16 @@ namespace ConsoleApp1
             }
         }
     }
+
+    public class Options
+    {
+        [Option('o', "output", Required = true, HelpText = "Output files to be processed.")]
+        public string OutputFile { get; set; }
+
+        [Option('d', "depth", HelpText = "Depth of search in a blog (set -1 for unlimited depth).", Default = -1)]
+        public int SearchDepth { get; set; }
+
+        [Option('i', "input", Required = true, HelpText = "Input files to be processed.")]
+        public string InputFile { get; set; }
+    }
 }

@@ -9,19 +9,6 @@ using CommandLine;
 
 namespace HabrParserLib
 {
-
-    public class Options
-    {
-        [Option('o', "output", Required = true, HelpText = "Output files to be processed.")]
-        public string OutputFile { get; set; }
-
-        [Option('d', "depth", HelpText = "Depth of search in a blog (set -1 for unlimited depth).", Default = -1)]
-        public int SearchDepth { get; set; }
-
-        [Option('i', "input", Required = true,HelpText = "Input files to be processed.")]
-        public string InputFile { get; set; }
-    }
-
     public struct DataInput
     {
         public List<string> BlogUrls;
@@ -116,7 +103,21 @@ namespace HabrParserLib
             List<ArticleInfo> myInfoSite = new List<ArticleInfo>();
             List<Task<ArticleInfo>> tasks = new List<Task<ArticleInfo>>(10);
             foreach (string url in links)
-                tasks.Add(Task.Factory.StartNew(() => Datarrr(infoSite, url)));
+                tasks.Add(Task.Factory.StartNew(() =>
+                {
+                    infoSite = default(ArticleInfo);
+                    try
+                    {
+
+                        return ProcessArticle(url, infoSite);
+                    }
+                    catch
+                    {
+                        ErrorOccured(this, String.Format(_notProcessPg, url));
+                        return infoSite;
+                    }
+
+                }));
 
             Task.WaitAll(tasks.ToArray());
 
@@ -125,23 +126,6 @@ namespace HabrParserLib
                     myInfoSite.Add(t.Result);
             return myInfoSite;
         }
-
-        private ArticleInfo Datarrr(ArticleInfo infoSite, string url)
-        {
-            infoSite = default(ArticleInfo);
-            try
-            {
-
-                return ProcessArticle(url, infoSite);
-            }
-            catch
-            {
-                ErrorOccured(this, String.Format(_notProcessPg, url));
-
-                return infoSite;
-            }
-        }
-
 
         private ArticleInfo ProcessArticle(string url, ArticleInfo infoSite)
         {
