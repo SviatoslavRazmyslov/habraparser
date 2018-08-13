@@ -34,7 +34,7 @@ namespace HabrParserLib
         public string name;
         public string link;
         public int rating;
-        public int bootmarks;
+        public int bookmarks;
         public double views;
         public int numbOfComments;
         public string dateOfPublication;
@@ -68,8 +68,14 @@ namespace HabrParserLib
         //------------------------------------------------------------------
         private readonly string _start_page = "https://habr.com";
         private readonly string _atrib = "href";
+        //msg для событий
+        private readonly string _unableConnect = "Unable To Connect: {0}";
+        private readonly string _notProcessPg = "The page is not processed : {0}";
+
+
 
         public event EventHandler<string> ErrorOccured;
+        public event EventHandler<string> StatusProcessing;
 
         public List<BlogInfo> Parse(String outputFile, String inputFile, int depth)
         {
@@ -110,76 +116,116 @@ namespace HabrParserLib
             List<ArticleInfo> myInfoSite = new List<ArticleInfo>();
             List<Task<ArticleInfo>> tasks = new List<Task<ArticleInfo>>(10);
             foreach (string url in links)
-                tasks.Add(Task.Factory.StartNew(() => ProcessArticle(url, infoSite)));
-            
+                tasks.Add(Task.Factory.StartNew(() => Datarrr(infoSite, url)));
+
             Task.WaitAll(tasks.ToArray());
 
             foreach (var t in tasks)
-                if (t.Result.hubs != null)
+                if (t.Result.timeOfPublication != null)
                     myInfoSite.Add(t.Result);
             return myInfoSite;
         }
 
+        private ArticleInfo Datarrr(ArticleInfo infoSite, string url)
+        {
+            infoSite = default(ArticleInfo);
+            try
+            {
+
+                return ProcessArticle(url, infoSite);
+            }
+            catch
+            {
+                ErrorOccured(this, String.Format(_notProcessPg, url));
+
+                return infoSite;
+            }
+        }
+
+
         private ArticleInfo ProcessArticle(string url, ArticleInfo infoSite)
         {
             HtmlDocument htmlDoc = null;
-                try
-                {
-                    htmlDoc = new HtmlWeb().Load(url);
-                }
-                catch
-                {
-                    ErrorOccured?.Invoke(this, "Unable To Connect: {0}");
-                    return infoSite;
-                }
+            try
+            {
+                htmlDoc = new HtmlWeb().Load(url);
+            }
+            catch
+            {
+                ErrorOccured?.Invoke(this, String.Format(_unableConnect, url));
+                return infoSite;
+            }
+            //         htmlDoc = null;
 
             // Поиск названия сайта       
-            infoSite.name = htmlDoc.DocumentNode.SelectSingleNode(_name).InnerText;
+            infoSite.name = SearchNameSite(htmlDoc);
 
             // Поиск ссылки сайта       
-            infoSite.link = htmlDoc.DocumentNode.SelectSingleNode(_link).Attributes["href"].Value;
+            infoSite.link = SearchHrefSite(htmlDoc);
 
-            string buf = "";
             // Поиск общего рейтинга сайта       
-            buf = htmlDoc.DocumentNode.SelectSingleNode(_raiting).InnerText;
-
-            if (buf.StartsWith("–")
-                || buf.StartsWith("‐")
-                || buf.StartsWith("−")
-                || buf.StartsWith("—"))
-            {
-                buf = buf.Remove(0, 1);
-                infoSite.rating = Convert.ToInt32(buf) * (-1);
-            }
-            else
-                infoSite.rating = Convert.ToInt32(buf);
+            infoSite.rating = SearchRatingSite(htmlDoc);
 
             // Поиск колличества закладок данного сайта       
-            buf = htmlDoc.DocumentNode.SelectSingleNode(_bookmarks).InnerText;
-            infoSite.bootmarks = Convert.ToInt32(buf);
+            infoSite.bookmarks = SearchBookmarks(htmlDoc);
 
             //Поиск колличества просмотров 
-            buf = htmlDoc.DocumentNode.SelectSingleNode(_views).InnerText;
-
-            if (buf.Contains('k'))
-            {
-                buf = buf.Substring(0, buf.Length - 1);
-                infoSite.views = Convert.ToDouble(buf) * 1000;
-            }
-            else
-            {
-                infoSite.views = Convert.ToDouble(buf);
-            }
-
+            infoSite.views = SearchNumbViews(htmlDoc);
 
             // Поиск колличества комментариев на сайте       
-            buf = htmlDoc.DocumentNode.SelectSingleNode(_comments).InnerText;
-
-            int.TryParse(buf, out infoSite.numbOfComments);
+            infoSite.numbOfComments = SearchNumbComments(htmlDoc);
 
             // Поиск даты создания сайта       
+            SearchDate(ref infoSite.dateOfPublication, ref infoSite.timeOfPublication, htmlDoc);
+
+            // Поиск меток, присутствующих на сайте       
+
+            infoSite.labels = SearchLabels(htmlDoc);
+
+            //Поиск хабов, расположенных на сайте
+            infoSite.hubs = SearchHubs(htmlDoc);
+
+            return infoSite;
+        }
+
+        private List<string> SearchHubs(HtmlDocument htmlDoc)
+        {
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode
+                               .SelectNodes(_hubs);
+
+            List<string> hubs = new List<string>();
+            if (nodes != null)
+            {
+                foreach (var node in nodes)
+                {
+                   hubs.Add(node.InnerText);
+                }
+            }
+
+            return hubs;
+        }
+
+        private List<string> SearchLabels(HtmlDocument htmlDoc)
+        {
+
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(_labels);
+            List<string> labels = new List<string>();
+            if (nodes != null)
+            {
+                foreach (var node in nodes)
+                {
+                    labels.Add(node.InnerText);
+                }
+            }
+
+            return labels;
+        }
+
+        private void SearchDate(ref string date, ref string time, HtmlDocument htmlDoc)
+        {
+            string buf = "";
             buf = htmlDoc.DocumentNode.SelectSingleNode(_date).InnerText;
-  
+
             //Замена буквенного представления месяца на численное
 
             buf = buf.TrimStart(' ').TrimEnd(' ');
@@ -204,14 +250,14 @@ namespace HabrParserLib
                 case 3:
                     if (buf.Contains("сегодня"))
                     {
-                        DateTime time = DateTime.ParseExact(buf, "сегодня в HH:mm", provider);
-                        resultDate = DateTime.Now.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
+                        DateTime resultTime = DateTime.ParseExact(buf, "сегодня в HH:mm", provider);
+                        resultDate = DateTime.Now.Date.Add(new TimeSpan(resultTime.Hour, resultTime.Minute, resultTime.Second));
                     }
                     else if (buf.Contains("вчера"))
                     {
-                        DateTime time = DateTime.ParseExact(buf, "вчера в HH:mm", provider);
+                        DateTime resultTime = DateTime.ParseExact(buf, "вчера в HH:mm", provider);
                         resultDate = DateTime.Now.AddDays(-1);
-                        resultDate = resultDate.Date.Add(new TimeSpan(time.Hour, time.Minute, time.Second));
+                        resultDate = resultDate.Date.Add(new TimeSpan(resultTime.Hour, resultTime.Minute, resultTime.Second));
                     }
                     break;
                 default:
@@ -219,35 +265,67 @@ namespace HabrParserLib
                     break;
             }
 
-            infoSite.dateOfPublication = resultDate.Date.ToShortDateString();
-            infoSite.timeOfPublication = resultDate.ToShortTimeString();
+            date = resultDate.Date.ToShortDateString();
+            time = resultDate.ToShortTimeString();
 
-            // Поиск меток, присутствующих на сайте       
-            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(_labels);
+        }
 
-            infoSite.labels = new List<string>();
-            if (nodes != null)
+        private int SearchNumbComments(HtmlDocument htmlDoc)
+        {
+            int numb = 0;
+            int.TryParse(htmlDoc.DocumentNode.SelectSingleNode(_comments).InnerText, out numb);
+            return numb;
+        }
+
+        private double SearchNumbViews(HtmlDocument htmlDoc)
+        {
+            string buf = "";
+            buf = htmlDoc.DocumentNode.SelectSingleNode(_views).InnerText;
+
+            if (buf.Contains('k'))
             {
-                foreach (var node in nodes)
-                {
-                    infoSite.labels.Add(node.InnerText);
-                }
+                buf = buf.Substring(0, buf.Length - 1);
+                return Convert.ToDouble(buf) * 1000;
             }
-
-            //Поиск хабов, расположенных на сайте
-            nodes = htmlDoc.DocumentNode
-                               .SelectNodes(_hubs);
-
-            infoSite.hubs = new List<string>();
-            if (nodes != null)
+            else
             {
-                foreach (var node in nodes)
-                {
-                    infoSite.hubs.Add(node.InnerText);
-                }
+                return Convert.ToDouble(buf);
             }
+        }
 
-            return infoSite;
+        private int SearchBookmarks(HtmlDocument htmlDoc)
+        {
+            string buf = "";
+            buf = htmlDoc.DocumentNode.SelectSingleNode(_bookmarks).InnerText;
+            return Convert.ToInt32(buf);
+            
+        }
+
+        private int SearchRatingSite(HtmlDocument htmlDoc)
+        {
+            string buf = "";
+            buf = htmlDoc.DocumentNode.SelectSingleNode(_raiting).InnerText;
+
+            if (buf.StartsWith("–")
+                || buf.StartsWith("‐")
+                || buf.StartsWith("−")
+                || buf.StartsWith("—"))
+            {
+                buf = buf.Remove(0, 1);
+                return Convert.ToInt32(buf) * (-1);
+            }
+            else
+                return Convert.ToInt32(buf);
+        }
+
+        private string SearchHrefSite(HtmlDocument htmlDoc)
+        {
+            return htmlDoc.DocumentNode.SelectSingleNode(_link).Attributes["href"].Value;
+        }
+
+        private string SearchNameSite(HtmlDocument htmlDoc)
+        {
+            return htmlDoc.DocumentNode.SelectSingleNode(_name).InnerText;
         }
 
         private List<string> Input(String inputFile)
@@ -285,11 +363,12 @@ namespace HabrParserLib
                 }
                 catch
                 {
-                    ErrorOccured?.Invoke(this, "Unable to load blog page");
                     check++;
                     if (check >= 4)
+                    {
+                        ErrorOccured?.Invoke(this, String.Format(_unableConnect, linkBlog));
                         return;
-
+                    }
                 }
             }
             HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(_title);
@@ -299,6 +378,8 @@ namespace HabrParserLib
                 return;
 
             int pagesCount = 0;
+            if (Data.searchDepth == -1)
+                Data.searchDepth = Int32.MaxValue;
             while (nodes != null && pagesCount < Data.searchDepth)
             {
                 foreach (HtmlNode node in nodes)
@@ -313,7 +394,6 @@ namespace HabrParserLib
 
                 if (nextPage == null || nextPage.Attributes[_atrib] == null)
                     break;
-
                 check = 0;
                 while (check >= 0)
                 {
@@ -324,11 +404,10 @@ namespace HabrParserLib
                     }
                     catch
                     {
-                        ErrorOccured?.Invoke(this, "UnableToConnect");
                         check++;
                         if (check >= 4)
                         {
-                            ErrorOccured(this, "Page load failed");
+                            ErrorOccured?.Invoke(this, String.Format(_unableConnect, nextPage.Attributes[_atrib].Value));
                             break;
                         }
 
@@ -338,7 +417,10 @@ namespace HabrParserLib
                 pagesCount++;
             }
             InfoMoreBlogs.Add(InfoBlog);
+            StatusProcessing?.Invoke(this, String.Format("The unit successfully processed : {0}", linkBlog));
             return;
+            //////
+
         }
     }
 }

@@ -25,36 +25,31 @@ namespace OutputInfo
         {
             FileStream File = new FileStream(namePathOutput, FileMode.Create, FileAccess.Write);
             StreamWriter Writer = new StreamWriter(File, Encoding.Unicode);
+            string buff = string.Join(_symIo, _nameIo, _linkIo, _raitingIo, _bootmarksIo, _viewsIo, 
+                _numbOfCommentsIo, _dateOfPublicationIo, _timeOfPublicationIo, _labelIo, _hubsIo);
 
-            Writer.WriteLine(_nameIo + _symIo
-                             + _linkIo + _symIo
-                             + _raitingIo + _symIo
-                             + _bootmarksIo + _symIo
-                             + _viewsIo + _symIo
-                             + _numbOfCommentsIo + _symIo
-                             + _dateOfPublicationIo + _symIo
-                             + _timeOfPublicationIo + _symIo
-                             + _labelIo + _symIo
-                             + _hubsIo);
+            Writer.WriteLine(buff);
 
             //TODO переделать на foreach
-            for (int i = 0; i < myInfoBlog.Count; i++)
+            foreach (BlogInfo singleBlog in myInfoBlog)
             {
-                for (int j = 0; j < myInfoBlog[i].InfoSingeBlogs.Count; j++)
+                foreach (ArticleInfo field in singleBlog.InfoSingeBlogs)
                 {
-                    string bufLabels = string.Join(", ", myInfoBlog[i].InfoSingeBlogs[j].labels);
-                    string bufHubs = string.Join(", ", myInfoBlog[i].InfoSingeBlogs[j].hubs);
+                    string bufLabels = string.Join(", ", field.labels);
+                    string bufHubs = string.Join(", ", field.hubs);
                     //TODO сделать через String.Join
-                    Writer.WriteLine(myInfoBlog[i].InfoSingeBlogs[j].name + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].link + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].rating + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].bootmarks + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].views + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].numbOfComments + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].dateOfPublication + _symIo
-                                     + myInfoBlog[i].InfoSingeBlogs[j].timeOfPublication + _symIo
-                                     + bufLabels + _symIo
-                                     + bufHubs);
+                    buff = string.Join(_symIo,
+                        field.name,
+                        field.link,
+                        field.rating,
+                        field.bookmarks,
+                        field.views,
+                        field.numbOfComments,
+                        field.dateOfPublication,
+                        field.timeOfPublication,
+                        bufLabels, bufHubs);
+
+                    Writer.WriteLine(buff);
                 }
             }
             Writer.Close();

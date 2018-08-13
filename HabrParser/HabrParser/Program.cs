@@ -2,7 +2,6 @@
 using HabrParserLib;
 using CommandLine;
 using OutputInfo;
-
 namespace ConsoleApp1
 {
     class Program
@@ -20,7 +19,7 @@ namespace ConsoleApp1
 
                 HabrParserLib.Parser parser = new HabrParserLib.Parser();
                 parser.ErrorOccured += (sender, msg) => Console.WriteLine(msg);
-
+                parser.StatusProcessing += (sender, msg) => Console.WriteLine(msg);
                 OutFile.Output(parser.Parse(arguments.OutputFile, arguments.InputFile, arguments.SearchDepth), arguments.OutputFile);
 
                 TimeSpan rezult = DateTime.Now - start;
